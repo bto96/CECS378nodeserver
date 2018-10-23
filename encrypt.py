@@ -3,6 +3,9 @@ import os
 import sys
 import os.path
 import json
+import hashlib
+import hmac
+import base64
 from base64 import b64encode, b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -40,6 +43,7 @@ def MyfileEncrypt(filepath):
 
 	#Open the file to be encrypted
 	file = open(filepath, 'rb')
+	ext = os.path.splitext(filepath)[1]
 	#Read data from file
 	bin = file.read()
 	bin = b64encode(bin)
@@ -54,7 +58,7 @@ def MyfileEncrypt(filepath):
 	e_file.close()
 
 	print("Encyption to file completed.")
-	return c_t, IV, key
+	return c_t, IV, key, ext
 
 def Mydecrypt(c_t, key, iv):
     if len(key) != 32:
@@ -68,7 +72,7 @@ def Mydecrypt(c_t, key, iv):
 
     return plaintext
 
-def MyfileDecrypt(filepath, key, iv):
+def MyfileDecrypt(filepath, key, iv, ext):
 	#open the file that will be decrypted
 	file = open(filepath, 'rb')
 	#read data
@@ -78,7 +82,7 @@ def MyfileDecrypt(filepath, key, iv):
 	plaintext = Mydecrypt(bin, key, iv)
 	plaintext = b64decode(plaintext)
 
-	dec_file = open("dec_file.jpg", "wb")
+	dec_file = open("dec_file" + ext, "wb")
 	dec_file.write(plaintext)
 	dec_file.close()
 
@@ -98,14 +102,31 @@ def saveFileAsJSON (filename, iv, key, c_t, ext):
     outFile.close()
 
 def MyencryptMAC(message, EncKey, HMACKey):
-	c_t, IV = Myencrypt(message, EncKey)
+
 	h = hmac.HMAC(HMACKey, hashes.SHA256(), backend=default_backend())
 	h.update(c_t)
 	h.finalize()
+	return c_t, IV
 
+def MyfileEncryptMAC(filepath):
+	HMACKey = os.urandom(32)
+	c_t, IV, EncKey, ext = MyfileEncrypt(filepath)
+	h = hmac.HMAC(HMACKey, hashes.SHA256(), backend=default_backend())
+	h.update(c_t)
+	tag = h.finalize()
+	return c_t, IV, tag, EncKey, HMACKey, ext
+
+def MyfileDecryptMAC(filepath, c_t, IV, tag, EncKey, HMACKey, ext):
+	h = hmac.HMAC(HMACKey, hashes.SHA256(), backend=default_backend())
+	h.update(c_t)
+	h.verify(tag)
+	MyfileDecrypt("./e_file", EncKey, IV, ext)
 
 #c_t, iv, key = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/plaintext")
 #saveFileAsJSON("plaintext.txt", iv, key, c_t,".txt")
 #MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, iv)
-c_t, IV, key = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/example.jpg")
-MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, IV)
+
+#c_t, IV, key, ext = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/example.jpg")
+#MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, IV, ext)
+c_t, IV, tag, EncKey, HMACKey, ext = MyfileEncryptMAC("./example.jpg")
+MyfileDecryptMAC("./e_file", c_t, IV, tag, EncKey, HMACKey, ext)
