@@ -104,7 +104,8 @@ def MyencryptMAC(message, EncKey, HMACKey):
 	h.finalize()
 
 
-c_t, iv, key = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/plaintext")
+#c_t, iv, key = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/plaintext")
 #saveFileAsJSON("plaintext.txt", iv, key, c_t,".txt")
-MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, iv)
-
+#MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, iv)
+c_t, IV, key = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/example.jpg")
+MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, IV)
