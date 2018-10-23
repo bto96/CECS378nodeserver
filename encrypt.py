@@ -78,7 +78,7 @@ def MyfileDecrypt(filepath, key, iv):
 	plaintext = Mydecrypt(bin, key, iv)
 	plaintext = b64decode(plaintext)
 
-	dec_file = open("dec_file", "wb")
+	dec_file = open("dec_file.jpg", "wb")
 	dec_file.write(plaintext)
 	dec_file.close()
 
