@@ -1,4 +1,3 @@
-
 import os
 import sys
 import os.path
@@ -128,5 +127,6 @@ def MyfileDecryptMAC(filepath, c_t, IV, tag, EncKey, HMACKey, ext):
 
 #c_t, IV, key, ext = MyfileEncrypt("/home/ubuntu/files/CECS378nodeserver/example.jpg")
 #MyfileDecrypt("/home/ubuntu/files/CECS378nodeserver/e_file", key, IV, ext)
+
 c_t, IV, tag, EncKey, HMACKey, ext = MyfileEncryptMAC("./example.jpg")
 MyfileDecryptMAC("./e_file", c_t, IV, tag, EncKey, HMACKey, ext)
