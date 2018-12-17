@@ -2,6 +2,9 @@ import encrypt
 import os
 import sys
 import os.path
+import json
+import base64
+from base64 import b64encode, b64decode
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding, hashes
@@ -91,24 +94,25 @@ def MyRSADecrypt(RSACipher, ciphertext, iv, tag, ext, RSA_PrivateKeyPath):
     dec_file.close()
 
 def directoryEncrypt():
-	for filename in os.listdir(cwd+"/TestPictures"):
+	for filename in os.listdir(cwd):
 		rsaciph, ciph_text, rsaiv, rsatag, rsaext = RSAEncrypt(filename, PUB_KEY_PATH)
 		json_dict = {
-			'RSACipher': rsaciph,
-			'C': ciph_text,
-			'IV': rsaiv,
-			'tag': rsatag,
+			'RSACipher': b64encode(rsaciph).decode('utf-8'),
+			'C': b64encode(ciph_text).decode('utf-8'),
+			'IV': b64encode(rsaiv).decode('utf-8'),
+			'tag': b64encode(rsatag).decode('utf-8'),
 			'ext': rsaext
 		}
-		with open(filename + '.json', 'w') as outfile:
-			json.dump(json_dict, outfile)
-		os.remove(filename + rsaext)
+		new_filename = filename + ".json"
+		with open(new_filename, 'wb') as f:
+			json.dump(json_dict, f)
+		#os.remove(filename)
+	print("Directory encrypt done")
 
 def main():
 	RSAKeyGen(PRI_KEY_PATH, PUB_KEY_PATH)
 	RSACipher, ciphertext, iv, tag, ext = RSAEncrypt("example.jpg", PUB_KEY_PATH)
 	MyRSADecrypt (RSACipher, ciphertext, iv, tag, ext, PRI_KEY_PATH)
-	directoryEncrypt()
 
 if __name__ == "__main__":
 	main()
